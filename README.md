@@ -1,1 +1,2 @@
-# deepspeed-on-aws
+# Microsoft DeepSpeed on AWS
+first commit
