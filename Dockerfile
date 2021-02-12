@@ -178,7 +178,7 @@ RUN python -c "import deepspeed; print(deepspeed.__version__)"
 COPY training_container /opt/ml/code
 
 ENV SAGEMAKER_SUBMIT_DIRECTORY /opt/ml/code
-ENV SAGEMAKER_PROGRAM launcher.py
+ENV SAGEMAKER_PROGRAM ds_launcher.py
 
 USER root
 WORKDIR /
