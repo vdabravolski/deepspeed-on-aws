@@ -3,6 +3,7 @@ import os
 import json
 import subprocess
 import logging
+import argparse
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -47,8 +48,11 @@ def _construct_host_file() -> str:
     logger.debug(f"Hostfile {hostfile} has been saved.")
     return hostfile
 
+# TODO: remove as it's no longer needed
+# All configs are stored in training_container dir
 def _construct_config_file() -> str:
     config = json.loads(os.environ['SM_HPS'])
+    print(f"Deserialized from HP config: {config}")
     config_file = os.path.join(os.environ['SM_INPUT_CONFIG_DIR'], 'ds_config.json')
     with open(config_file,'w') as f:
         json.dump(config, f)
@@ -58,7 +62,17 @@ def _construct_config_file() -> str:
 
 def main():
     
-    logger.info("inside main func")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--deepspeed-config-file',
+                        type=str,
+                        help='Deepspeed config file'
+    )
+    parser.add_argument('--train-script',
+                       type=str,
+                       default='train_cifar10.py',
+                       help='Training script to be executed by DeepSpeed')
+    args, unknown = parser.parse_known_args()    
+    
     
     if not _is_master_host():
         # worker nodes do nothing as deepspeed launcher
@@ -68,18 +82,17 @@ def main():
 
     # constructing script launcher based on
     # https://www.deepspeed.ai/getting-started/#launching-deepspeed-training
-    train_script = os.path.join(os.environ['SM_MODULE_DIR'], os.environ['SM_USER_ENTRY_POINT'])
+    train_script = os.path.join(os.environ['SM_MODULE_DIR'], args.train_script)
     hostfile = _construct_host_file()
-    ds_config_file = _construct_config_file()
-#         script_args = " ".join(sys.argv)
-#         cmd = f"deepspeed {TRAIN_SCRIPT} {script_args} --deepspeed --deepspeed_config {ds_config_file} --hostfile {hostfile}"
+    deepspeed_config = os.path.join(os.environ['SM_MODULE_DIR'], args.deepspeed_config_file)
+    
     cmd = ["deepspeed"]
     if hostfile:
         cmd.append(f"--hostfile {hostfile}")
     cmd.append(train_script)
-    cmd.append("--launcher openmpi") # defaulting to openmpi launcher https://github.com/microsoft/DeepSpeed/blob/c5e4264186c321321858fb46d75c328fdc908ddb/deepspeed/launcher/runner.py#L95
-    cmd.append("--deepspeed")
-    cmd.append(f"--deepspeed_config {ds_config_file}")
+    cmd.append("--launcher=openmpi") # defaulting to openmpi launcher https://github.com/microsoft/DeepSpeed/blob/c5e4264186c321321858fb46d75c328fdc908ddb/deepspeed/launcher/runner.py#L95
+    cmd.append("--deepspeed-flag")
+    cmd.append(f"--config-file={deepspeed_config}")
     logger.info(f"Following command line will be launched on master:{cmd}")
     
     # Placeholder. If we need to customize our env, we can
