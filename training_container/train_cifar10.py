@@ -26,7 +26,7 @@ def parse_initial_args():
     parser = argparse.ArgumentParser(description='CIFAR')
 
     parser.add_argument('--epochs',
-                        default=30,
+                        default=5,
                         type=int,
                         help='number of total epochs (default: 30)')
     parser.add_argument('--local_rank',

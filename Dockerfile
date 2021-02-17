@@ -35,9 +35,9 @@ RUN wget https://apt.llvm.org/llvm.sh && \
 # Client Liveness & Uncomment Port 22 for SSH Daemon
 ##############################################################################
 # # Keep SSH client alive from server side
-# RUN echo "ClientAliveInterval 30" >> /etc/ssh/sshd_config
-# RUN cp /etc/ssh/sshd_config ${STAGE_DIR}/sshd_config && \
-#     sed "0,/^#Port 22/s//Port 22/" ${STAGE_DIR}/sshd_config > /etc/ssh/sshd_config
+RUN echo "ClientAliveInterval 30" >> /etc/ssh/sshd_config
+RUN cp /etc/ssh/sshd_config ${STAGE_DIR}/sshd_config && \
+    sed "0,/^#Port 22/s//Port 22/" ${STAGE_DIR}/sshd_config > /etc/ssh/sshd_config
 
 
 # VD: Mellanox OFED is driver for Infiniband and RoCE - should be irrelevant for AWS
@@ -151,7 +151,7 @@ ENV CUDA_HOME=/usr/local/cuda-10.1
 ADD https://raw.githubusercontent.com/aws/deep-learning-containers/master/src/deep_learning_container.py /usr/local/bin/deep_learning_container.py
 RUN sudo chmod ugo+rwx /usr/local/bin/deep_learning_container.py
 
-RUN git clone https://github.com/microsoft/DeepSpeed.git ${STAGE_DIR}/DeepSpeed
+RUN git clone https://github.com/vdabravolski/DeepSpeed.git ${STAGE_DIR}/DeepSpeed
 
 # copy scripts to directory under path
 # ENV DEEPSPEED_BIN=/opt/ml/code/deepspeed/bin
