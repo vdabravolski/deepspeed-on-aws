@@ -67,14 +67,18 @@ def main():
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     
-    trainset = torchvision.datasets.CIFAR10(root=os.environ['SM_CHANNEL_DATA'],
+    # TODO: looks like envs are not propagated to child processes.Hence, SM_CHANNEL_DATA will be underfined.
+    data_root= os.environ.get('SM_CHANNEL_DATA','/opt/ml/input/data/data')
+    batches_dir= os.path.join(data_root, 'cifar-10-batches-py')
+                                   
+    trainset = torchvision.datasets.CIFAR10(root=data_root,
                                             train=True,
                                             download=False,
                                             transform=transform
                                            )
-    testset = torchvision.datasets.CIFAR10(root=os.environ['SM_CHANNEL_DATA'],
+    testset = torchvision.datasets.CIFAR10(root=data_root,
                                            train=False,
-                                           download=True,
+                                           download=False,
                                            transform=transform)        
 
         
